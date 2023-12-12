@@ -6,15 +6,8 @@ const port = 3000
 
 app.use(express.json())
 
-//mongoose connect
-try{
-  mongoose.connect(process.env.CONNECTION_STRING)
-}catch(e){
-  console.log(e)
-}
-
 // Streamer - Schema
-const streamerSchema = new mongoose.Schema({
+const Streamer = mongoose.model('Streamer', {
   nickname: String,
   platform: String,
   subscribers: Number,
@@ -24,6 +17,11 @@ const streamerSchema = new mongoose.Schema({
 
 app.get('/', (req, res) => {
   res.send('Hello World!')
+})
+
+app.get('/streamers', async(req,res) => {
+  const streamers = await Streamer.find()
+  res.send(streamers)
 })
 
 //add streamer
@@ -40,7 +38,29 @@ app.post('/', async(req, res) => {
   res.send(streamer)
 })
 
+app.put('/:id', async(req,res) => {
+  const id = req.params.id
+  const streamer = await Streamer.findByIdAndUpdate({_id: id}, {
+    subscribers: req.body.subscribers
+  }, {new: true})
+
+  return res.send(streamer)
+})
+
+app.delete('/:id', async(req,res)=> {
+  const id = req.params.id
+  const streamer = await Streamer.findByIdAndDelete({_id: id})
+  return res.send(streamer)
+})
+
 app.listen(port, () => {
+  //mongoose connect
+try{
+  mongoose.connect(process.env.CONNECTION_STRING)
+}catch(e){
+  console.log(e)
+}
+
   console.log(`Rodando na porta: ${port}`)
 })
 
